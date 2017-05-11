@@ -4,8 +4,8 @@ public class Map {
 	
 	private int[][] map;
 	
-	Map(int high, int width) {
-		this.map = new	int[high][width];
+	Map(int height, int width) {
+		this.map = new	int[height][width];
 	}
 	
 	public int[][] getMap() {
