@@ -28,105 +28,83 @@ public class Map {
 
 		ArrayList<ArrayList<Integer>> finalList = new ArrayList<ArrayList<Integer>>();
 		ArrayList<Integer> typeWalls = new ArrayList<Integer>();
-		ArrayList<Integer> rightSide= new ArrayList<Integer>();
-		ArrayList<Integer> leftSide = new ArrayList<Integer>();
-		ArrayList<Integer> leftSideList = new ArrayList<Integer>();
-		ArrayList<Integer> rightSideList = new ArrayList<Integer>();
+		ArrayList<Integer> allLeftSide = new ArrayList<Integer>();
 		ArrayList<Integer> outsideList = new ArrayList<Integer>();
 		ArrayList<Integer> insideList = new ArrayList<Integer>();
+		ArrayList<Integer> leftSideList = new ArrayList<Integer>();
+		ArrayList<Integer> rightSideList = new ArrayList<Integer>();
 
 		finalList.add(typeWalls);
-		
-		int typeWall;
+		int iter = 0;
+		int typeWall;	
 		boolean isLeftOrRight;			// true is right, false is left
 		int indexX1; int indexY1;		//Last wall index (!=-1) on the same line, right side
 		int[] index2;
 
-		
+		boolean runningList;
 		for (int indexY0=0; indexY0<this.height; indexY0++){
 			for (int indexX0=0; indexX0<this.width; indexX0++){
+				//Scanne toute la matrice
 				
 				if (this.mapMatrix[indexX0][indexY0] != -1){
+					//Ne slectionne que les valeurs où il y a un mur (sol = -1)
+				
+					runningList = true;
+					if (!allLeftSide.isEmpty()){
+						//vérifie si la coordonnée actuelle n'existe pas deja dans une liste de leftside
 					
-					if (leftSide.size()!=0){	
-						boolean runningList = true; //y apasue unleft sde!!!!!!!!
-						for (int i = 0; i<leftSide.size()/2;i++){
-							if (indexX0 == leftSide.get(2*i) && indexY0 == leftSide.get(2*i+1)){
+						for (int i = 0; i<allLeftSide.size()/2;i++){
+							//System.out.println("Je suis à la position ("+indexX0+","+indexY0+") avant le if");
+							if (indexX0 == allLeftSide.get(2*i) && indexY0 == allLeftSide.get(2*i+1)){
+								//System.out.println("Je suis à la position ("+indexX0+","+indexY0+") dans le if de la leftSide");
+
+								//System.out.println("Je suis à la position ("+indexX0+","+indexY0+") et j'ai rencontré un mur de la LeftSide");
 								runningList = false;
 								while (isInMap(indexX0,indexY0) && this.mapMatrix[indexX0][indexY0]!=-1){
 									indexX0++;
 								}
+								//System.out.println("RunningList = " + runningList);
 							}
-						}	
-						if (runningList == true){
-							
-								typeWall = mapMatrix[indexX0][indexY0];;
-								indexX1 = getIndexX1(indexX0, indexY0);
-								indexY1 = indexY0;
-								index2 = getIndex2(indexX0, indexX1, indexY0);
-								isLeftOrRight = returnDirection(indexX0, index2[0]);
-								
-								if (isLeftOrRight == true){ //Right
-									leftSideList = rainDropInside(indexX0, indexY0, isLeftOrRight, insideList);
-									rightSideList = rainDropOutside(indexX1,indexY1, isLeftOrRight,outsideList);
-									
-								} else { //Left
-									rightSideList = rainDropInside(indexX1, indexY1, isLeftOrRight, insideList);
-									leftSideList = rainDropOutside(indexX0,indexY0,isLeftOrRight,outsideList);
-								}
-								
-								finalList.add(leftSideList);
-								finalList.add(rightSideList);
-								
-								finalList.get(0).add(typeWall);
-								for (int k =0; k<leftSideList.size();k++){
-									leftSide.add(leftSideList.get(k));
-								}
-								for (int j =0; j<rightSideList.size();j++){
-									rightSide.add(rightSideList.get(j));
-								}
-								
-								while(isInMap(indexX0,indexY0) && this.mapMatrix[indexX0][indexY0] !=-1){
-									// Condition d'arrêt pour que lorsqu'il a commencé à analyse un mur, il n'analyse pas le 1 qui est juste à côté,
-									// il faut qu'il reparte au prochain sol sur sa droite.
-									indexX0++;
-								}
-							}
-						} else {
+						}
+						//System.out.println("Je suis à la position ("+indexX0+","+indexY0+") et je n'ai rencontré aucun mur de la leftSide -> Nouveau mur ! :");	
+					}
+					//System.out.println("Je suis à la position ("+indexX0+","+indexY0+") et je vais construire les listes d'un mur");
+					
+					if (runningList == true){
+						leftSideList.clear();
+						rightSideList.clear();
+						insideList.clear();
+						outsideList.clear();
 						
-						typeWall = returnID(indexX0, indexY0);
+						typeWall = mapMatrix[indexX0][indexY0];
 						indexX1 = getIndexX1(indexX0, indexY0);
-						indexY1 = indexY0;	
+						indexY1 = indexY0;
 						index2 = getIndex2(indexX0, indexX1, indexY0);
 						isLeftOrRight = returnDirection(indexX0, index2[0]);
-
-
-						if (isLeftOrRight == true){
-							typeWalls.add(typeWall);
+						
+						if (isLeftOrRight == true){ //Right
 							leftSideList = rainDropInside(indexX0, indexY0, isLeftOrRight, insideList);
 							rightSideList = rainDropOutside(indexX1,indexY1, isLeftOrRight,outsideList);
-
-							for (int k =0; k<leftSideList.size();k++){
-								leftSide.add(leftSideList.get(k));
-							}
+							//System.out.println("Je suis à la position ("+indexX0+","+indexY0+") à un mur droite j'ai construit ses listes");
 							
-							for (int j =0; j<rightSideList.size();j++){
-								rightSide.add(rightSideList.get(j));
-							}
-							
-						} else {
-							typeWalls.add(typeWall);
+						} else { //Left
 							rightSideList = rainDropInside(indexX1, indexY1, isLeftOrRight, insideList);
 							leftSideList = rainDropOutside(indexX0,indexY0,isLeftOrRight,outsideList);
-
-							for (int k =0; k<leftSideList.size();k++){
-								leftSide.add(leftSideList.get(k));
-							}
-							for (int j =0; j<rightSideList.size();j++){
-								rightSide.add(rightSideList.get(j));
-							}
-							
+							//System.out.println("Je suis à la position ("+indexX0+","+indexY0+") à un mur gauche j'ai construit ses listes");
 						}
+						
+
+						finalList.get(0).add(typeWall);
+						finalList.add(leftSideList);
+						finalList.add(rightSideList);
+						
+						for (int k =0; k<leftSideList.size();k++){
+							allLeftSide.add(leftSideList.get(k));
+						}
+						for (int j=0; j<leftSideList.size()/2;j++){
+							System.out.println("Element de left sideList : ("+leftSideList.get(2*j)+","+leftSideList.get(2*j+1)+")");
+						}
+						
 						
 						while(isInMap(indexX0,indexY0) && this.mapMatrix[indexX0][indexY0] !=-1){
 							// Condition d'arrêt pour que lorsqu'il a commencé à analyse un mur, il n'analyse pas le 1 qui est juste à côté,
@@ -137,90 +115,74 @@ public class Map {
 				}
 			}
 		}
-		finalList.add(typeWalls);
-		finalList.add(rightSide);
-		finalList.add(leftSide);
 		return finalList;
 	}
 	
-	private ArrayList<Integer> rainDropOutside(int xCurrent, int yCurrent, boolean direction, ArrayList<Integer> outsideList){
+	private ArrayList<Integer> rainDropOutside(int xInit, int yInit, boolean direction, ArrayList<Integer> outsideList){
+		// get the points list of the outside of the wall
 		int dir;
+		outsideList.add(xInit);
+		outsideList.add(yInit);
+		int xCurrent = xInit;
+		int yCurrent = yInit+1;
 		
 		if (direction == true){ //RIGHT
 			dir = 1;
 		} else {	//LEFT
 			dir = -1;
 		}
-		
-		boolean running1;
-		boolean running2;
-
-		while (isInMap(xCurrent+dir,yCurrent) && isInMap(xCurrent,yCurrent+1) && !(this.mapMatrix[xCurrent +dir][yCurrent] == -1 && this.mapMatrix[xCurrent][yCurrent+1] == -1)){
-			running1 = true;
-
-			while(isInMap(xCurrent+dir, yCurrent) && running1 == true){
-				if (this.mapMatrix[xCurrent+dir][yCurrent] == -1){
-					outsideList.add(xCurrent);
-					outsideList.add(yCurrent);
-					yCurrent++;
-				} else {
-					running1 = false;
-				}
+		int iter = 0;
+		while (isInMap(xCurrent+dir,yCurrent-1) && isInMap(xCurrent,yCurrent) && this.mapMatrix[xCurrent+dir][yCurrent-1] != -1 && this.mapMatrix[xCurrent][yCurrent] != -1){
+			//System.out.println("ciondition d arret iteration outside"+ iter);
+			iter++;
+			while(isInMap(xCurrent+dir, yCurrent) && this.mapMatrix[xCurrent+dir][yCurrent] == -1){
+				outsideList.add(xCurrent);
+				outsideList.add(yCurrent);
+				yCurrent++;
 			}
 			
-			running2 = true;
-			
-			while (isInMap(xCurrent+dir, yCurrent) && running2 == true){
-				if (this.mapMatrix[xCurrent+dir][yCurrent] == -1){
-					outsideList.add(xCurrent);
-					outsideList.add(yCurrent);
-					running2 = false;
-				}else {
-					xCurrent = xCurrent+dir;
-				}
+			while (isInMap(xCurrent+dir, yCurrent) && this.mapMatrix[xCurrent+dir][yCurrent] != -1){
+				xCurrent+=dir;
 			}
+			outsideList.add(xCurrent);
+			outsideList.add(yCurrent);
+			yCurrent++;
 		}
 		return outsideList;
 	}
 	
-	private ArrayList<Integer> rainDropInside(int xCurrent, int yCurrent, boolean direction,ArrayList<Integer> insideList){
+	private ArrayList<Integer> rainDropInside(int xInit, int yInit, boolean direction,ArrayList<Integer> insideList){
+		// get the points list of the inside of the wall
 		int dir;
+		insideList.add(xInit);
+		insideList.add(yInit);
+		int xCurrent = xInit;
+		int yCurrent = yInit+1;
 		
 		if (direction == true){ //RIGHT
 			dir = 1;
 		} else {	//LEFT
 			dir = -1;
 		}
-		
-		boolean running1;
-		boolean running2;
-		
-		while(isInMap(xCurrent+dir,yCurrent) && isInMap(xCurrent,yCurrent+1) && !(this.mapMatrix[xCurrent +dir][yCurrent] == -1 && this.mapMatrix[xCurrent][yCurrent+1] == -1)){
-			running1 = true;
-			
-			while(isInMap(xCurrent, yCurrent+1) && running1 == true){
-				if (this.mapMatrix[xCurrent][yCurrent+1] != -1){
-					insideList.add(xCurrent);
-					insideList.add(yCurrent);
-					yCurrent++;
-				} else {
-					insideList.add(xCurrent);
-					insideList.add(yCurrent);
-					running1 = false;
-				}
-				
+		int iter = 0;
+		int iter1 = 0;
+		//System.out.println("nombre defois que il rentre: " + iter1);
+		iter1++;
+		while(isInMap(xCurrent+dir,yCurrent-1) && isInMap(xCurrent,yCurrent) && this.mapMatrix[xCurrent+dir][yCurrent-1] != -1 && this.mapMatrix[xCurrent][yCurrent] != -1){
+			//System.out.println("condition d arret iteration inside"+ iter);
+			iter++;
+			while(isInMap(xCurrent, yCurrent) && this.mapMatrix[xCurrent][yCurrent] != -1){
+				insideList.add(xCurrent);
+				insideList.add(yCurrent);
+				yCurrent++;
 			}
-			
-			running2 = true;
-			
-			while(isInMap(xCurrent, yCurrent+1) && running2 == true){
-				if (this.mapMatrix[xCurrent][yCurrent+1] == -1){
-					xCurrent+=dir;
-				} else {
-					running2 = false;
-					yCurrent++;
-				}
+
+			while(isInMap(xCurrent, yCurrent) && this.mapMatrix[xCurrent][yCurrent] == -1){
+				xCurrent+=dir;
 			}
+			insideList.add(xCurrent);
+			insideList.add(yCurrent);
+			yCurrent++;
 		}	
 		return insideList;
 	}
@@ -228,9 +190,9 @@ public class Map {
 
 	private boolean returnDirection(int indexX0, int indexX2){
 		//find the orientation of the wall
-		boolean direction = true;//Right
-		if (indexX0 == indexX2){
-			direction = false;//Left
+		boolean direction = false;//Left
+		if (indexX0 != indexX2){
+			direction = true;//right
 		}
 		return direction;
 	}
